@@ -3,7 +3,7 @@ variable "nutanix_username" {
 }
 
 variable "nutanix_password" {
-  type =  string
+  type      = string
   sensitive = true
 }
 
@@ -16,7 +16,7 @@ variable "nutanix_port" {
 }
 
 variable "nutanix_insecure" {
-  type = bool
+  type    = bool
   default = true
 }
 
@@ -30,4 +30,17 @@ variable "nutanix_cluster" {
 
 variable "centos_iso_image_name" {
   type = string
+}
+
+variable "windows_2019_iso_image_name" {
+  type = string
+}
+
+variable "virtio_iso_image_name" {
+  type = string
+}
+
+variable "windows_password" {
+  type      = string
+  sensitive = true
 }
