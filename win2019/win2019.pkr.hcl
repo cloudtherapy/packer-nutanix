@@ -7,38 +7,47 @@ packer {
   }
 }
 
-source "nutanix" "centos-kickstart" {
-  nutanix_username = var.nutanix_username
-  nutanix_password = var.nutanix_password
-  nutanix_endpoint = var.nutanix_endpoint
-  nutanix_port     = var.nutanix_port
-  nutanix_insecure = var.nutanix_insecure
-  cluster_name     = var.nutanix_cluster
-  os_type          = "Linux"
+variable "nutanix_username" {
+  type = string
+}
 
+variable "nutanix_password" {
+  type      = string
+  sensitive = true
+}
 
-  vm_disks {
-    image_type        = "ISO_IMAGE"
-    source_image_name = var.centos_iso_image_name
-  }
+variable "nutanix_endpoint" {
+  type = string
+}
 
-  vm_disks {
-    image_type   = "DISK"
-    disk_size_gb = 40
-  }
+variable "nutanix_port" {
+  type = number
+}
 
-  vm_nics {
-    subnet_name = var.nutanix_subnet
-  }
+variable "nutanix_insecure" {
+  type    = bool
+  default = true
+}
 
-  cd_files = ["scripts/ks.cfg"]
-  cd_label = "OEMDRV"
+variable "nutanix_subnet" {
+  type = string
+}
 
-  image_name       = "centos7-{{isotime `Jan-_2-15:04:05`}}"
-  shutdown_command = "echo 'packer' | sudo -S shutdown -P now"
-  shutdown_timeout = "2m"
-  ssh_password     = "packer"
-  ssh_username     = "packer"
+variable "nutanix_cluster" {
+  type = string
+}
+
+variable "windows_2019_iso_image_name" {
+  type = string
+}
+
+variable "virtio_iso_image_name" {
+  type = string
+}
+
+variable "windows_password" {
+  type      = string
+  sensitive = true
 }
 
 source "nutanix" "win2019" {
@@ -67,7 +76,7 @@ source "nutanix" "win2019" {
     subnet_name = var.nutanix_subnet
   }
 
-  cd_files = ["scripts/autounattend.xml", "scripts/configure-ansible.ps1", "scripts/deploy-bginfo.ps1", "scripts/enable-winrm.ps1", "scripts/install-chocolatey.ps1"]
+  cd_files = ["../scripts/win2019/autounattend.xml", "../scripts/configure-ansible.ps1", "../scripts/deploy-bginfo.ps1", "../scripts/enable-winrm.ps1", "../scripts/install-chocolatey.ps1", "../scripts/disable-network-discovery.cmd"]
 
   image_name       = "win2019-{{isotime `Jan-_2-15:04:05`}}"
   shutdown_command = "shutdown /s /t 10 /f /d p:4:1 /c \"Packer Shutdown\""
@@ -81,4 +90,9 @@ source "nutanix" "win2019" {
   winrm_timeout    = "10m"
   winrm_password   = var.windows_password
   winrm_username   = "Administrator"
+}
+
+build {
+  name = "win2019"
+  source "nutanix.win2019" {}
 }
