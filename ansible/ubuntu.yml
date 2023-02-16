@@ -1,0 +1,36 @@
+---
+- name: cetech-image
+  hosts: 127.0.0.1
+  gather_facts: false
+  connection: local
+  become: true
+  tasks:
+    - name: install cloud-init
+      package:
+        name: cloud-init
+        state: present
+
+    - name: allow ssh password login
+      lineinfile:
+        path: /etc/cloud/cloud.cfg
+        regexp: '^ssh_pwauth:'
+        state: present
+        line: 'ssh_pwauth:   1'
+                        
+    - name: create ansible user
+      user:
+        name: ansible
+        group: sudo
+        shell: /bin/bash
+      register: ansible_user
+
+    - name: configure ansible authorized key
+      authorized_key:
+        user: ansible
+        key: https://github.com/k-laughman.keys/
+
+    - name: allow sudo for ansible
+      lineinfile:
+        path: /etc/sudoers
+        regexp: '^%sudo.*'
+        line: '%sudo ALL=(ALL) NOPASSWD: ALL'

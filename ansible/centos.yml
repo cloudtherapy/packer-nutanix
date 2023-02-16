@@ -1,0 +1,52 @@
+---
+- name: cetech-image
+  hosts: 127.0.0.1
+  gather_facts: false
+  connection: local
+  become: true
+  tasks:
+    - name: install cloud-init
+      package:
+        name: cloud-init
+        state: present
+
+    - name: allow ssh password login
+      lineinfile:
+        path: /etc/cloud/cloud.cfg
+        regexp: '^ssh_pwauth:'
+        state: present
+        line: 'ssh_pwauth:   1'
+
+    - name: create ansible user
+      user:
+        name: ansible
+        group: wheel
+        shell: /bin/bash
+      register: ansible_user
+
+    - name: configure ansible authorized key
+      authorized_key:
+        user: ansible
+        key: https://github.com/k-laughman.keys/
+
+    - name: enable selinux
+      selinux:
+        policy: targeted
+        state: enforcing
+
+    - name: allow sudo for ansible
+      lineinfile:
+        path: /etc/sudoers
+        regexp: '^%wheel.*'
+        line: '%wheel ALL=(ALL) NOPASSWD: ALL'
+
+    - name: install firewalld
+      package:
+        name: firewalld
+        state: present
+
+    - name: start firewalld
+      service:
+        name: firewalld
+        enabled: true
+        state: started

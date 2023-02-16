@@ -7,6 +7,7 @@ packer {
   }
 }
 
+
 variable "nutanix_username" {
   type = string
 }
@@ -37,12 +38,11 @@ variable "nutanix_cluster" {
   type = string
 }
 
-variable "centos_iso_image_name" {
+variable "ubuntu22_iso_image_name" {
   type = string
 }
 
-
-source "nutanix" "centos-kickstart" {
+source "nutanix" "ubuntu22" {
   nutanix_username = var.nutanix_username
   nutanix_password = var.nutanix_password
   nutanix_endpoint = var.nutanix_endpoint
@@ -54,7 +54,7 @@ source "nutanix" "centos-kickstart" {
 
   vm_disks {
     image_type        = "ISO_IMAGE"
-    source_image_name = var.centos_iso_image_name
+    source_image_name = var.ubuntu22_iso_image_name
   }
 
   vm_disks {
@@ -66,10 +66,10 @@ source "nutanix" "centos-kickstart" {
     subnet_name = var.nutanix_subnet
   }
 
-  cd_files = ["../scripts/centos7/ks.cfg"]
-  cd_label = "OEMDRV"
+  cd_files = ["../http/ubuntu-22.04/meta-data", "../http/ubuntu-22.04/user-data"]
+  cd_label = "cidata"
 
-  image_name       = "centos7-{{isotime `Jan-_2-15:04:05`}}"
+  image_name       = "ubuntu22-{{isotime `Jan-_2-15:04:05`}}"
   shutdown_command = "echo 'packer' | sudo -S shutdown -P now"
   shutdown_timeout = "2m"
   ssh_password     = "packer"
@@ -77,15 +77,16 @@ source "nutanix" "centos-kickstart" {
 }
 
 build {
-  name = "centos7"
-  source "nutanix.centos-kickstart" {}
+  name = "ubuntu22"
+  source "nutanix.ubuntu22" {}
 
   provisioner "file" {
-    destination = "/tmp/ansible-centos-image.yml"
-    source      = "../ansible/centos.yml"
+    destination = "/tmp/ansible-ubuntu-image.yml"
+    source      = "../ansible/ubuntu.yml"
   }
 
   provisioner "shell" {
-    script = "../scripts/centos7/centos-base-customize.sh"
+    script = "../scripts/ubuntu22/ubuntu-base-customize.sh"
   }
 }
+
